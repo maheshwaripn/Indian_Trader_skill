@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "indian-trader-skill"
+version = "0.1.0"
+description = "Local-first Indian equity research, paper accounting and AI coaching"
+readme = "README.md"
+requires-python = ">=3.11"
+license = {text = "MIT"}
+authors = [{name = "Prashant Maheshwari"}]
+dependencies = []
+
+[project.optional-dependencies]
+parquet = ["pyarrow>=17,<24"]
+yahoo = ["yfinance>=0.2.54,<1"]
+
+[project.scripts]
+indian-trader = "indian_trader.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

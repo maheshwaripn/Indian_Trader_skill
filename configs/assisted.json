@@ -1,0 +1,10 @@
+{
+  "mode": "assisted",
+  "max_rows": 500000,
+  "brief_candidates": 5,
+  "max_experiments": 12,
+  "suggested_ai_reviews": 1,
+  "operating_state": "research",
+  "ai_access": "manual",
+  "note": "Only max_rows and brief_candidates are enforced by v0.1. Other budgets are recommendations."
+}

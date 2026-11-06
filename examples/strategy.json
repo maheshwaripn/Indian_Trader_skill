@@ -1,0 +1,12 @@
+{
+  "hypothesis": "Persistent demand may create medium-term trends; this is unvalidated.",
+  "universe": "User-supplied dated cash-equity universe; current constituent lists are unsuitable for historical selection.",
+  "timeframe": "Daily, completed bars only",
+  "entry": "Close crosses above 20-bar SMA; enter next available open",
+  "exit": "Close below SMA -> next open; 2% stop and 2R target; end-of-sample close proxy",
+  "sizing": "Equal cash sleeves, whole shares, 0.5% planned sleeve risk; no leverage",
+  "portfolio_limits": "Fixed equal allocation; aggregate risk review remains a separate research task",
+  "costs": "Illustrative 10 bps fee per side and 5 bps slippage; replace with own cost assumptions",
+  "data": "Canonical OHLCV; validate coverage, adjustments and missing delisted instruments",
+  "validation": "Freeze this baseline; compare holdout periods and higher costs before interpreting results"
+}

@@ -1,0 +1,14 @@
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+build/
+dist/
+.env
+.env.*
+!.env.example
+workspace/
+data/
+runs/
+*.sqlite*
+*.log

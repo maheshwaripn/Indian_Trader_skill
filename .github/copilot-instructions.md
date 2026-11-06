@@ -1,0 +1,1 @@
+Read START_HERE.md and AGENTS.md from the repository root. Use the existing Python CLI, inspect compact briefs and load the relevant skills/ guide only. Preserve explicit signal timing, costs, provenance and evidence labels. No live broker adapter exists in v0.1. Run offline tests and documentation checks after changes.

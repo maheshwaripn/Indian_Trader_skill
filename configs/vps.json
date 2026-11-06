@@ -1,0 +1,10 @@
+{
+  "mode": "vps",
+  "max_rows": 2000000,
+  "brief_candidates": 5,
+  "max_experiments": 20,
+  "suggested_ai_reviews": 2,
+  "operating_state": "research",
+  "ai_access": "manual",
+  "note": "Only max_rows and brief_candidates are enforced by v0.1. Other budgets are recommendations."
+}
