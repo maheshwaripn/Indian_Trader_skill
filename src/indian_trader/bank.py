@@ -3,16 +3,20 @@ import json
 import re
 import shutil
 import sqlite3
+from contextlib import closing, contextmanager
 from pathlib import Path
 from .core import digest, quality, read_bars, stamp
 
 
+@contextmanager
 def connect(root):
     root = Path(root)
     root.mkdir(parents=True, exist_ok=True)
-    con = sqlite3.connect(root / "catalogue.sqlite", timeout=30)
-    con.execute("CREATE TABLE IF NOT EXISTS datasets (name TEXT, hash TEXT, source TEXT, captured TEXT, path TEXT, quality TEXT, PRIMARY KEY(name,hash))")
-    return con
+    # SQLite transaction contexts do not close the connection themselves.
+    with closing(sqlite3.connect(root / "catalogue.sqlite", timeout=30)) as con:
+        with con:
+            con.execute("CREATE TABLE IF NOT EXISTS datasets (name TEXT, hash TEXT, source TEXT, captured TEXT, path TEXT, quality TEXT, PRIMARY KEY(name,hash))")
+            yield con
 
 
 def ingest(root, name, path, source, max_rows):

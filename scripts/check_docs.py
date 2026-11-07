@@ -6,14 +6,14 @@ errors=[]
 for p in root.rglob('*.md'):
     if any(x in p.parts for x in ('.git','.venv','workspace')):
         continue
-    text=p.read_text()
+    text=p.read_text(encoding="utf-8")
     for link in re.findall(r'\]\(([^)]+)\)',text):
         if '://' in link or link.startswith('#'):
             continue
         target=(p.parent/link.split('#')[0]).resolve()
         if not target.exists():errors.append(f'{p.relative_to(root)}: missing {link}')
 for p in (root/'skills').glob('*/SKILL.md'):
-    text=p.read_text()
+    text=p.read_text(encoding="utf-8")
     if not re.match(r'^---\nname: [a-z0-9-]+\ndescription: .+\n---\n',text):
         errors.append(f'invalid skill header {p}')
 if errors:

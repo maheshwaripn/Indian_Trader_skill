@@ -1,16 +1,20 @@
 """Transactional manual paper fill ledger. NEVER contacts a broker."""
 import sqlite3
+from contextlib import closing, contextmanager
 from pathlib import Path
 from .core import finite, stamp
 
 
+@contextmanager
 def db(path):
     Path(path).parent.mkdir(parents=True, exist_ok=True)
-    c = sqlite3.connect(path, timeout=30)
-    c.execute("CREATE TABLE IF NOT EXISTS account (id INTEGER PRIMARY KEY CHECK(id=1), cash REAL NOT NULL)")
-    c.execute("CREATE TABLE IF NOT EXISTS positions (symbol TEXT PRIMARY KEY, qty INTEGER, cost REAL)")
-    c.execute("CREATE TABLE IF NOT EXISTS fills (id TEXT PRIMARY KEY, at TEXT, symbol TEXT, side TEXT, qty INTEGER, price REAL, fee REAL, realized REAL)")
-    return c
+    # SQLite transaction contexts do not close the connection themselves.
+    with closing(sqlite3.connect(path, timeout=30)) as c:
+        with c:
+            c.execute("CREATE TABLE IF NOT EXISTS account (id INTEGER PRIMARY KEY CHECK(id=1), cash REAL NOT NULL)")
+            c.execute("CREATE TABLE IF NOT EXISTS positions (symbol TEXT PRIMARY KEY, qty INTEGER, cost REAL)")
+            c.execute("CREATE TABLE IF NOT EXISTS fills (id TEXT PRIMARY KEY, at TEXT, symbol TEXT, side TEXT, qty INTEGER, price REAL, fee REAL, realized REAL)")
+            yield c
 
 
 def initialize(path, cash):
