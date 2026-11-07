@@ -6,6 +6,34 @@ Use Python for arithmetic and data processing. Use Claude, Codex/ChatGPT, Gemini
 
 **Educational software · v0.1 research release · no live order routing.** You own your financial decisions and risk. No returns are promised. Historical, synthetic and paper results are explicitly labelled. Read [risk and responsibility](docs/risk.md).
 
+## About this project
+
+Indian Trader Skill is an open-source educational toolkit for developing a more structured approach to Indian-market strategy research. It combines portable AI instructions, local Python utilities, data-management workflows and explainable reports so users can move from an informal trading idea to a documented, testable specification.
+
+The project is designed for individual traders, learners and developers who want to understand their assumptions as well as their results. It can be used on a personal computer or VPS, with or without an AI assistant. The offline core does not require a paid model API.
+
+### What you can use it for
+
+- **Develop and review strategy ideas:** identify missing entry/exit rules, signal timing, sizing, costs and validation assumptions; understand why each choice matters.
+- **Prepare a research data bank:** validate CSV inputs, optionally load Parquet, preserve source snapshots and track provenance instead of repeatedly downloading or changing data without a record.
+- **Run reference research:** explore daily SMA-cross and five-minute opening-range-breakout examples, inspect trades and assess documented assumptions. These examples demonstrate research mechanics; they are not validated investment recommendations.
+- **Understand performance:** generate offline HTML dashboards and compact evidence briefs, review trade filters and learn how to interpret metrics and their limitations.
+- **Record paper activity:** maintain a manual fill ledger for positions and cash, clearly separated from historical simulations and actual broker execution.
+- **Audit historical constituents:** inspect NiftyHistory membership events and retrieve as-of snapshots while keeping unresolved source conflicts visible.
+- **Learn setup and operating practices:** follow guides for Python, AI assistants, data sources, VPS operation, broker connectivity prerequisites and live-trading readiness.
+
+### Local computation and optional AI guidance
+
+Python performs calculations and data processing; the assistant helps clarify the hypothesis, explain missing elements and suggest the next useful investigation. The shared instructions are intended for Claude, ChatGPT/Codex, Gemini and Copilot, subject to each tool's available access and capabilities.
+
+Start an AI review with the generated `brief.json`, then inspect larger artifacts only when needed. The four modes—`local`, `assisted`, `lab` and `vps`—provide different input and brief budgets. They do not measure or cap tokens consumed by an external assistant. A browser chatbot needs an authorized connection or user-run commands to work on a local machine or VPS.
+
+### How it relates to Indian Quant
+
+Use **Indian Trader Skill** for guided strategy formulation, reference backtests, data preparation, report interpretation and manual paper accounting. Use **[Indian Quant](https://github.com/maheshwaripn/Indian_Quant)** for Qlib-backed factor research, baseline machine-learning comparisons and portfolio simulations. Both repositories install independently; sharing a purpose does not imply an automatic data or execution integration.
+
+The current release is a research and learning foundation. Broker adapters, automatic paper fills, live routing and walk-forward orchestration remain future work. Historical constituent auditing is available, but reference backtests do not automatically apply membership eligibility. The capability table below distinguishes working features from planned extensions.
+
 ## Start by asking your assistant
 
 > Use this repository: https://github.com/maheshwaripn/Indian_Trader_skill. Read START_HERE.md, inspect my authorised environment, help me choose a resource mode and data source, run the offline demonstration, explain the report, and help me turn my strategy idea into a testable specification. Keep computations local and explain any limitations.
