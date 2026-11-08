@@ -1,6 +1,4 @@
 import csv
-import json
-import math
 import tempfile
 import unittest
 from pathlib import Path
@@ -55,7 +53,7 @@ class Tests(unittest.TestCase):
         self.assertLess(cost['metrics']['net_pnl'],zero['metrics']['net_pnl'])
     def test_gap_stop(self):
         b=bars([10,9,11,12,8])
-        r=research.run(b,lookback=2,stop_pct=10,target_r=10,fee_bps=0,slippage_bps=0)
+        r=research.run(b,lookback=2,stop_pct=10,target_r=10,fee_bps=0,slippage_bps=0,allow_suspect_jumps=True)
         self.assertEqual(r['trades'][0]['exit'],8)
         self.assertEqual(r['trades'][0]['reason'],'gap_stop')
     def test_ambiguous_stop_first(self):
@@ -70,7 +68,7 @@ class Tests(unittest.TestCase):
         self.assertEqual(r['metrics']['trades'],0)
         self.assertIsNone(r['metrics']['win_rate_pct'])
     def test_incomplete_orb_rejected(self):
-        with self.assertRaisesRegex(ValueError,'complete'):research.run(bars([10,11]),strategy='orb')
+        with self.assertRaisesRegex(ValueError,'complete'):research.run(bars([10,11]),strategy='orb',strict_sessions=True)
     def test_orb_next_bar_and_flat(self):
         from datetime import datetime,timedelta,timezone
         start=datetime(2024,1,2,9,15,tzinfo=timezone(timedelta(hours=5,minutes=30)))

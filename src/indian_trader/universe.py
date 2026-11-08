@@ -56,3 +56,23 @@ def asof(path, on, index="Nifty500", allow_unverified=False):
             "symbols": sorted(members(row["symbols"])), "verified": False,
             "semantics": "snapshot forward-filled until next event; publication time unavailable",
             "stale_possible": on > report["last"], "audit_status": report["status"]}
+
+
+def membership(path, index="Nifty500", allow_unverified=False):
+    """Function (symbol, 'YYYY-MM-DD') -> bool: was the symbol in the index's latest snapshot on or before that date.
+    Before the first snapshot nothing is a member. Symbols are matched exactly; map renames before use."""
+    import bisect
+    report = audit(path)
+    if report["transition_mismatches"] and not allow_unverified:
+        raise ValueError("Conflicting constituent history: reconcile first or explicitly use --allow-unverified for exploratory runs")
+    with open(path, encoding="utf-8-sig", newline="") as f:
+        rows = sorted((r["effective_date"], members(r["symbols"])) for r in csv.DictReader(f) if r["index_type"] == index)
+    if not rows:
+        raise ValueError(f"no snapshots for index {index}")
+    dates = [d for d, _ in rows]
+
+    def member(symbol, day):
+        i = bisect.bisect_right(dates, day) - 1
+        return i >= 0 and symbol in rows[i][1]
+    member.info = {"index": index, "snapshots": len(rows), "first": dates[0], "last": dates[-1], "audit_status": report["status"]}
+    return member

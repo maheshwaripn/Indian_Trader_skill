@@ -4,7 +4,7 @@
 
 Use Python for arithmetic and data processing. Use Claude, Codex/ChatGPT, Gemini or Copilot to understand evidence, challenge assumptions and plan the next experiment. No AI subscription or API key is required for the offline core.
 
-**Educational software · v0.1 research release · no live order routing.** You own your financial decisions and risk. No returns are promised. Historical, synthetic and paper results are explicitly labelled. Read [risk and responsibility](docs/risk.md).
+**Educational software · v0.2 research release · no live order routing.** You own your financial decisions and risk. No returns are promised. Historical, synthetic and paper results are explicitly labelled. Read [risk and responsibility](docs/risk.md).
 
 ## About this project
 
@@ -55,25 +55,29 @@ indian-trader init --interactive
 indian-trader demo
 ```
 
-Open `workspace/demo-dashboard.html` in a browser. It is a standalone interactive report with no CDN or tracking. Its prices are **synthetic**, not NIFTY history. Expected deterministic demo: 12 trades, ending equity approximately INR 99,656.08 from INR 100,000, using the documented default costs. This loss-making example is intentional: the demonstration does not select favourable results.
+Open `workspace/demo-dashboard.html` in a browser. It is a standalone interactive report with no CDN or tracking. Its prices are **synthetic**, not NIFTY history. Expected deterministic demo: 12 trades, ending equity about INR 99,134.20 from INR 100,000 after dated Indian delivery charges and ₹20 brokerage per order (v0.1's flat 10 bps gave INR 99,656.08).
 
 ## What works today
 
-| Capability | v0.1 status |
+| Capability | v0.2 status |
 |---|---|
-| Offline CSV validation and content-addressed data bank | Implemented, tested |
-| Parquet loading | Optional PyArrow extra; uses same schema |
-| NiftyHistory constituent audit and as-of snapshot lookup | Implemented; conflicts blocked unless explicitly exploratory |
-| Daily SMA-cross and 5-minute ORB research | Implemented reference engines; not validated alpha |
-| Dashboard, evidence brief and trade filtering | Implemented; generated offline HTML |
+| Offline CSV validation and content-addressed data bank | Implemented, tested; bank is portable (relative paths) and records adjustment state |
+| Parquet loading, faster CSV with PyArrow | Optional PyArrow extra; uses same schema |
+| NiftyHistory constituent audit, as-of lookup and membership filter in back-tests | Implemented; conflicts blocked unless explicitly exploratory |
+| Daily SMA-cross and 5-minute ORB research | Reference engines; ORB skips incomplete sessions; not validated alpha |
+| Dated Indian costs (STT, exchange, SEBI, stamp, GST, brokerage, DP) | Implemented for delivery, intraday, futures, options; estimates, see [costs](docs/costs.md) |
+| Futures mode with dated lot sizes and margin | Implemented, long only, continuous prices |
+| Evidence protocol: windows, buy-and-hold, random-entry null, cost stress, bootstrap, sweep, plateau, reality check | Implemented as `evaluate` and `sweep` |
+| Corporate-action check and NSE calendar check | Detects suspected unadjusted splits/bonuses; 2026 calendar bundled |
+| Dashboard, evidence brief and trade filtering | Implemented; trades shown in rupees and R |
 | Strategy completeness review | Implemented deterministic checklist + guided AI workflows |
-| Paper accounting | Implemented manual fill ledger; not a broker sandbox or automated fill service |
+| Paper accounting | Manual fill ledger in integer paise, fill times, estimated charges, unrealised P&L from a price file |
 | Yahoo daily download | Optional yfinance adapter; not live-tested in release validation |
-| Legacy NSE CM bhavcopy conversion | Implemented; UDiFF requires explicit mapping |
+| NSE CM bhavcopy conversion | Legacy and UDiFF layouts, several days merged |
 | Four resource modes | Row budgets and brief limits enforced; other budgets are guidance |
 | Multiple AI assistants | Shared instructions and setup guides; no claim of end-to-end testing on every AI product |
 | Dhan / Zerodha | Detailed setup and live-readiness documentation; no executable broker adapter yet |
-| Walk-forward orchestration, auto-ingestion, automatic paper fills, live routing | Roadmap; not implemented |
+| Adjusted-price engine, contract-level futures, auto-ingestion, automatic paper fills, live routing | Roadmap; not implemented |
 
 ## Four resource modes
 
@@ -93,7 +97,8 @@ Choose with `indian-trader --mode local demo` or edit `workspace/config.json`. G
 - [AI setup](docs/ai-setup.md): Claude, ChatGPT/Codex, Gemini, Copilot
 - [Data sources and bank](docs/data.md): CSV, Parquet, Yahoo, NSE, broker data
 - [Point-in-time history](docs/point-in-time.md): constituent semantics and supplied CSV audit
-- [Strategy research](docs/research.md): rules, costs, validation, learning exercises
+- [Strategy research](docs/research.md): rules, products, evidence protocol, learning exercises
+- [Trading costs](docs/costs.md): dated Indian charges and broker presets
 - [Dashboard and metrics](docs/dashboard.md): how to read reports
 - [Dhan](docs/dhan.md) and [Zerodha](docs/zerodha.md): setup and connectivity guides
 - [Live readiness](docs/live-readiness.md): static IP, current official references, operational gates
@@ -110,6 +115,9 @@ indian-trader validate workspace/demo.csv
 indian-trader ingest workspace/demo.csv --name demo --source synthetic
 indian-trader scan workspace/demo.csv
 indian-trader research workspace/demo.csv --strategy trend --lookback 20
+indian-trader sweep workspace/demo.csv --grid '{"lookback":[10,20,40]}' --dev 2024-01-01 2024-03-31
+indian-trader evaluate workspace/demo.csv --lookback 20 --dev 2024-01-01 2024-03-31 --val 2024-04-01 2024-06-30
+indian-trader cost-calc --product futures --qty 500 --buy-price 1600 --sell-price 1610 --buy-date 2026-05-04
 indian-trader coach examples/strategy.json
 indian-trader paper-init --capital 100000
 indian-trader paper-fill --id demo-001 --symbol DEMO_A --side buy --qty 10 --price 100 --fee 1

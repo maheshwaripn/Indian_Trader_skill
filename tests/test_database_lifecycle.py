@@ -57,7 +57,7 @@ class DatabaseLifecycleTests(unittest.TestCase):
         paper.initialize(path, 1000)
         with self.assertRaisesRegex(RuntimeError, 'injected failure'):
             with paper.db(path) as con:
-                con.execute('UPDATE account SET cash=1 WHERE id=1')
+                con.execute('UPDATE account SET cash_paise=100 WHERE id=1')
                 raise RuntimeError('injected failure')
         self.assertEqual(paper.status(path)['cash'], 1000)
         self.assert_closed()

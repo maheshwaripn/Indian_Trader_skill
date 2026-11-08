@@ -43,7 +43,7 @@ For larger jobs use a systemd service with `User=`, `WorkingDirectory=`, `Memory
 
 - Back up raw files, catalogue, paper ledger, configuration, private notes and run artifacts. Do not make credential backups public.
 - Stop writers before copying SQLite files, or use SQLite's backup API. Copying an active database and ignoring its journal can produce an inconsistent backup.
-- Catalogue paths are absolute in v0.1. For relocation, restore files then rebuild the catalogue by re-ingesting verified snapshots; do not assume paths automatically migrate.
+- Catalogue paths are relative to the bank since v0.2, so a restored or moved workspace verifies as is. For catalogues written by v0.1, verification falls back to the bank folder; if needed, rebuild by re-ingesting verified snapshots; do not assume paths automatically migrate.
 - Verify hashes with `verify-bank` after restoration. Check paper cash/positions/fill counts against the source backup.
 - Keep code commit and Python environment record alongside the backup.
 - Test recovery in a separate workspace before relying on it.

@@ -19,3 +19,13 @@ jobs:
       - run: python -m unittest discover -s tests -v
       - run: python scripts/check_docs.py
       - run: indian-trader demo
+  lint-and-pyarrow:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -e ".[parquet]" ruff
+      - run: ruff check src tests scripts
+      - run: python -m unittest discover -s tests -v

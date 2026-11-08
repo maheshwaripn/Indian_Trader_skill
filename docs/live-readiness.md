@@ -1,6 +1,6 @@
 # Live readiness and dated regulatory references
 
-**v0.1 does not place real orders.** This guide prepares a future separately tested adapter. An educational disclaimer does not waive legal duties, broker terms or responsibility for losses. This is an engineering checklist, not a legal certification.
+**The current release (0.2) does not place real orders.** This guide prepares a future separately tested adapter. An educational disclaimer does not waive legal duties, broker terms or responsibility for losses. This is an engineering checklist, not a legal certification.
 
 ## Official source register
 

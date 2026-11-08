@@ -53,6 +53,25 @@ def parse_time(value):
     return d.astimezone(timezone.utc)
 
 
+def _csv_rows(path, max_rows):
+    """Uses PyArrow's CSV reader when installed (much faster on large files); otherwise the standard library."""
+    try:
+        import pyarrow.csv as pcsv
+        table = pcsv.read_csv(path, convert_options=pcsv.ConvertOptions(column_types={"timestamp": "string", "symbol": "string"}))
+        if table.num_rows > max_rows:
+            raise ValueError("row budget exceeded; partition the dataset or select another profile")
+        return table.to_pylist()
+    except ImportError:
+        pass
+    with path.open(newline="", encoding="utf-8-sig") as f:
+        raw = []
+        for row in csv.DictReader(f):
+            if len(raw) >= max_rows:
+                raise ValueError("row budget exceeded; partition the dataset or select another profile")
+            raw.append(row)
+    return raw
+
+
 def read_bars(path, max_rows=500000):
     """Strict canonical OHLCV input. Timestamps are bar OPEN times."""
     path = Path(path)
@@ -66,13 +85,7 @@ def read_bars(path, max_rows=500000):
             raise ValueError("row budget exceeded; partition the dataset or select another profile")
         raw = pf.read().to_pylist()
     else:
-        with path.open(newline="", encoding="utf-8-sig") as f:
-            reader = csv.DictReader(f)
-            raw = []
-            for row in reader:
-                if len(raw) >= max_rows:
-                    raise ValueError("row budget exceeded; partition the dataset or select another profile")
-                raw.append(row)
+        raw = _csv_rows(path, max_rows)
     if not raw:
         raise ValueError("empty dataset")
     result, seen, previous = [], set(), {}
@@ -100,6 +113,26 @@ def read_bars(path, max_rows=500000):
     return result
 
 
+SPLIT_RATIOS = (1.5, 4 / 3, 2, 2.5, 3, 4, 5, 10)
+
+
+def suspect_jumps(bars, threshold=0.25, tolerance=0.03):
+    """Overnight moves that look like an unadjusted split or bonus: the previous close divided by the next open is
+    close to a common ratio (2, 3, 4, 5, 10, 1.5, 4/3, 2.5) and the move is at least `threshold`. Evidence to check,
+    not proof: a real crash can match, and an odd ratio can be missed."""
+    out, last = [], {}
+    for b in bars:
+        s = b["symbol"]
+        if s in last:
+            prev = last[s]; ratio = prev["close"] / b["open"]
+            if abs(ratio - 1) >= threshold and ratio > 1:
+                near = min(SPLIT_RATIOS, key=lambda r: abs(ratio / r - 1))
+                if abs(ratio / near - 1) <= tolerance:
+                    out.append({"symbol": s, "timestamp": b["timestamp"], "previous_close": prev["close"], "open": b["open"], "ratio": round(ratio, 4), "looks_like": f"1:{near:g} split or bonus"})
+        last[s] = b
+    return out
+
+
 def quality(bars):
     groups = {}
     for b in bars:
@@ -108,6 +141,7 @@ def quality(bars):
         "status": "STRUCTURALLY_VALID", "rows": len(bars), "symbols": len(groups),
         "first": min(b["timestamp"] for b in bars), "last": max(b["timestamp"] for b in bars),
         "zero_volume_bars": sum(b["volume"] == 0 for b in bars),
+        "suspect_corporate_actions": suspect_jumps(bars)[:50],
         "coverage": {s: {"rows": len(v), "first": v[0]["timestamp"], "last": v[-1]["timestamp"]} for s, v in groups.items()},
         "warnings": ["Structural validation does not certify exchange-calendar completeness, freshness, corporate actions or tradability.",
                      "Historical constituent membership and delisted prices must be supplied independently."]}

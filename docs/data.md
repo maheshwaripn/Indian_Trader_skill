@@ -34,7 +34,7 @@ indian-trader catalogue
 indian-trader verify-bank
 ```
 
-The importer copies a raw file into a SHA-256-addressed folder and adds an SQLite catalogue row. Re-importing identical content under the same name is idempotent. Changed content becomes a new version. The catalogue records acquisition time and structural coverage. It does not automatically bless a correction.
+The importer copies a raw file into a SHA-256-addressed folder and adds an SQLite catalogue row. Re-importing identical content under the same name is idempotent. Changed content becomes a new version. The catalogue records acquisition time, structural coverage and the declared adjustment state. Snapshot paths are stored relative to the bank, so a workspace can be moved or copied and still verify; catalogues from v0.1 with absolute paths are still read. It does not automatically bless a correction.
 
 ## Daily maintenance procedure
 
@@ -45,7 +45,7 @@ The importer copies a raw file into a SHA-256-addressed folder and adds an SQLit
 5. Record which snapshot your research used. `research` stores the input hash in its result.
 6. Run `verify-bank`, back up the workspace, and periodically restore to a test directory.
 
-v0.1 does not automatically append/merge files, repair gaps, fetch corporate actions or reconcile duplicate sources. These operations need an explicit reviewed transformation. No “last writer wins” merge is permitted by default.
+The tool does not automatically repair gaps, fetch corporate actions or reconcile duplicate sources. These operations need an explicit reviewed transformation. No “last writer wins” merge is permitted by default.
 
 ## Yahoo daily example
 
@@ -59,13 +59,19 @@ The end date is exclusive. Current-day bars are excluded. Output uses raw prices
 
 ## NSE bhavcopy
 
-Download your permitted daily archive from the official NSE reports area: https://www.nseindia.com/all-reports. Extract the CSV locally. The included converter supports **legacy** `SYMBOL,SERIES,OPEN,HIGH,LOW,CLOSE,TOTTRDQTY,TIMESTAMP` columns and keeps `EQ` rows:
+Download your permitted daily archive from the official NSE reports area: https://www.nseindia.com/all-reports. Extract the CSV locally. The converter reads both the **legacy** layout (`SYMBOL,SERIES,OPEN,HIGH,LOW,CLOSE,TOTTRDQTY,TIMESTAMP`) and the **UDiFF** layout used since July 2024 (`BhavCopy_NSE_CM_0_0_0_YYYYMMDD_F_0000.csv`: `TradDt, TckrSymb, SctySrs, OpnPric, HghPric, LwPric, ClsPric, TtlTradgVol`). It keeps one series (default `EQ`), and for UDiFF only stock rows (`FinInstrmTp` = `STK`). Several daily files can be merged in one call; rows are sorted by symbol and date.
 
 ```bash
-indian-trader convert-bhavcopy downloaded.csv --output workspace/nse-day.csv
+indian-trader convert-bhavcopy BhavCopy_NSE_CM_0_0_0_2026110*_F_0000.csv --output workspace/nse-days.csv
 ```
 
-Current UDiFF or other layouts are deliberately rejected rather than guessed. For a new layout, document its official field definitions, map trade date/security/series/OHLC/volume explicitly, preserve raw input, and add fixtures before adding a converter. A single bhavcopy provides one daily observation per instrument; collect history before testing a daily strategy. It cannot reconstruct intraday ORB bars.
+Other layouts are rejected rather than guessed. Bhavcopy prices are **raw**: splits and bonuses are not adjusted (see below).
+
+## Corporate actions and calendars
+
+`validate` and `ingest` list `suspect_corporate_actions`: overnight moves where previous close / next open is near a common split or bonus ratio (2, 3, 4, 5, 10, 1.5, 4/3, 2.5) and the move is at least 25%. `research` stops on these unless `--allow-suspect-jumps`. Treat the list as evidence to check, not proof: a crash can match and an odd ratio can be missed. Record the adjustment state when ingesting: `ingest FILE --name N --source S --adjustment raw|adjusted|unknown`.
+
+`calendar-check FILE` compares daily bars with the bundled NSE calendar (2026: holidays, the Budget Sunday session and the Muhurat session) and lists missing sessions and bars on closed days. Add more years with `--calendar FILE` in the same JSON shape as `src/indian_trader/data/nse_calendar_2026.json`. Dates outside every loaded calendar are not judged.
 
 ## Parquet
 

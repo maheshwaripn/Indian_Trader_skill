@@ -1,6 +1,6 @@
 # Zerodha / Kite setup
 
-Reviewed on 2026-11-06. Documentation only in v0.1; no live or authenticated integration test was performed.
+Reviewed on 2026-11-06. Documentation only in the current release; no live or authenticated integration test was performed.
 
 ## 1. Account and developer application
 

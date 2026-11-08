@@ -3,7 +3,7 @@ name: indian-trader-broker-readiness
 description: Guide Dhan or Zerodha data and eventual live-trading setup, static-IP configuration, account permissions, paper validation and current compliance checks.
 ---
 
-Read `docs/live-readiness.md` and the chosen broker guide. State immediately that v0.1 has no live-order adapter.
+Read `docs/live-readiness.md` and the chosen broker guide. State immediately that the current release has no live-order adapter.
 
 1. Establish personal research versus live execution versus third-party service intent. Do not assume one regulatory pathway covers all roles.
 2. Verify current official broker/exchange/SEBI requirements before giving time-sensitive instructions. Separate verified requirements from interpretation and unresolved questions.

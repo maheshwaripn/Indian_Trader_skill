@@ -1,21 +1,18 @@
-# Release validation — 0.1.0
+# Release validation — 0.2.0
 
-Performed on 2026-11-06 in the development Linux/Python 3.12 environment:
+Performed on 2026-11-08 on Linux, Python 3.12, with and without PyArrow:
 
-- 25 offline unit/integration tests passed: next-open timing, gap stops, ambiguous stop/target ordering, accounting conservation, cost effects, no-trade metrics, complete ORB sessions, duplicate/out-of-order/invalid bars, row budgets, snapshot integrity, conflicting constituent events, paper duplicates/oversells/partial-sale cost basis, legacy bhavcopy conversion, HTML escaping and coach placeholder handling.
-- End-to-end CLI exercised: init, doctor, demo, ingest, verify-bank, research and coach.
-- Documentation relative links and portable skill headers checked.
-- Independent assistant workflow exercised a partially specified RSI idea. It correctly explained the absent RSI engine rather than claiming the SMA demo tested RSI. This identified placeholder handling in the deterministic coach, which was improved and tested.
-- Seeded demo: 12 trades; INR 99,656.081169 ending equity from INR 100,000, after illustrative costs. Synthetic prices only.
-- Compact brief benchmark: about 82% fewer JSON payload bytes than the full demo result; this is not a measured token/cost saving. Core makes zero AI calls.
+- 49 offline tests pass (29 from 0.1 plus 20 new): hand-computed futures round-trip charges (₹499.64 for 500 x ₹1,600 on 4 May 2026), STT change dates, delivery-free broker and DP charge, Indian costs reducing results, calendar classification and missing-session detection, split-like gaps blocked unless allowed, ORB skipping an incomplete day while trading a complete one, futures whole lots and one-lot rejection, membership blocking entries, windows excluding earlier entries, R sign matching P&L, reproducible random entries, evaluate and sweep end to end, neighbour sets, a moved workspace bank verifying (new and v0.1 catalogues), UDiFF conversion, membership lookup, v0.1 paper ledger migration to paise, estimated fees and marking.
+- UDiFF converter run on real NSE CM bhavcopies for 4 and 5 November 2026: 5,481 EQ rows, RELIANCE 4 Nov close 1,311.00.
+- Opening-range strategy with one bar removed from one of five days: v0.1 rejected the whole file; 0.2 skips that day and trades the rest.
+- Seeded demo: 12 trades; INR 99,134.199916 ending equity from INR 100,000 after Indian delivery charges and ₹20 per order. Synthetic prices only.
+- Reading 300,000 rows with PyArrow installed: 7.6 s and about 430 MB of memory on this machine, mostly row validation. Plan on roughly 1.4 KB of memory a row for the `lab` and `vps` budgets.
+- `ruff check` with the project configuration is clean.
 
 Not verified:
 
 - Authenticated broker connections, real orders, live fills or provider entitlements.
+- Cost rates before 2023 and broker presets against every broker's current card; check contract notes.
 - Yahoo network access and every optional dependency/platform combination.
-- All AI products' automatic skill discovery/login flows.
-- Full visual/browser QA: report generation and escaping passed, but the development browser could not launch due to environment socket restrictions. Do not treat this as a completed visual review.
-- Windows/macOS matrix execution locally; a GitHub Actions matrix is provided to run these checks remotely.
-- Historical alpha, out-of-sample robustness, corporate actions, authoritative PIT reconciliation or regulatory approval.
-
-This is a research foundation. The roadmap in architecture.md remains explicit about unfinished capabilities.
+- Windows/macOS locally; the GitHub Actions matrix runs these remotely.
+- Historical alpha, adjusted prices, authoritative PIT reconciliation or regulatory approval.

@@ -9,6 +9,7 @@ METRICS = {
     "trades": ("Completed trades", "Sample size, not independent observations. Correlated trades reduce evidence strength."),
     "win_rate_pct": ("Win rate %", "Profitable closed trades / all closed trades. A high win rate can coexist with losses."),
     "expectancy_inr": ("Expectancy INR", "Average net P&L per completed trade. Position sizing affects this measure."),
+    "expectancy_r": ("Expectancy R", "Average net result per trade in multiples of the planned risk (R). Independent of position size; below zero after costs means no edge in this sample."),
     "profit_factor": ("Profit factor", "Sum of winning net P&L / absolute losing net P&L. Undefined with no losses; not proof of safety."),
     "fees_inr": ("Fees INR", "Aggregate simulated fees. Slippage is embedded in fills. Actual statutory and broker charges may differ."),
     "ending_equity": ("Ending equity INR", "Cash plus marked holdings. Compare with starting capital; beware incomplete data."),
@@ -30,7 +31,7 @@ def dashboard(result, output):
     stride = max(1, len(points)//800)
     indexes = sorted(set(range(0,len(points),stride)) | {len(points)-1})
     coords = " ".join(f'{20+i/max(1,len(points)-1)*960:.2f},{220-(values[i]-low)/max(1e-9,high-low)*180:.2f}' for i in indexes)
-    rows = "".join('<tr>'+''.join(f'<td>{esc(t.get(k,""))}</td>' for k in ("symbol","entry_time","exit_time","qty","entry","exit","net_pnl","reason"))+'</tr>' for t in result["trades"])
+    rows = "".join('<tr>'+''.join(f'<td>{esc(t.get(k,""))}</td>' for k in ("symbol","entry_time","exit_time","qty","entry","exit","net_pnl","r_multiple","reason"))+'</tr>' for t in result["trades"])
     warnings = "".join(f"<li>{esc(w)}</li>" for w in result["warnings"])
     provenance = esc(json.dumps(result.get("provenance",{}),indent=2))
     out = f'''<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -40,7 +41,7 @@ def dashboard(result, output):
 <section class="cards">{''.join(cards)}</section><h2>Equity through time</h2>
 <svg viewBox="0 0 1000 250" role="img" aria-label="Portfolio equity curve"><polyline points="{coords}" fill="none" stroke="#83dfca" stroke-width="3"/></svg>
 <p>Range INR {low:,.2f}–{high:,.2f}. From {esc(points[0]['timestamp'])} to {esc(points[-1]['timestamp'])}. X-axis follows observed bars, not equal calendar intervals.</p>
-<h2>Trade review</h2><label>Filter trades <input id="filter" placeholder="Symbol or exit reason"></label><p id="count"></p><div class="scroll"><table><thead><tr>{''.join('<th>'+x+'</th>' for x in ['Symbol','Entry UTC','Exit UTC','Qty','Entry price','Exit price','Net INR','Reason'])}</tr></thead><tbody id="trades">{rows}</tbody></table></div>
+<h2>Trade review</h2><label>Filter trades <input id="filter" placeholder="Symbol or exit reason"></label><p id="count"></p><div class="scroll"><table><thead><tr>{''.join('<th>'+x+'</th>' for x in ['Symbol','Entry UTC','Exit UTC','Qty','Entry price','Exit price','Net INR','R','Reason'])}</tr></thead><tbody id="trades">{rows}</tbody></table></div>
 <h2>Evidence and limitations</h2><ul>{warnings}</ul><details><summary>Run provenance</summary><pre>{provenance}</pre></details>
 <h2>What to do next</h2><p>Check data coverage, compare a simple baseline, test costs, and inspect untouched periods. Do not select a strategy solely from this report. No benchmark or out-of-sample validation is implied.</p>
 <footer>Educational software. You own investment decisions and financial risk. Historical simulation is not a forecast. No broker connection or live orders.</footer>
