@@ -69,7 +69,7 @@ Write the rules, windows and checks first. Then:
 # 1. choose settings on the development window only; every setting is reported
 indian-trader sweep data.csv --grid '{"lookback":[10,20,40],"stop_pct":[1,2,3]}' --dev 2018-01-01 2021-12-31
 # 2. run validation once with the chosen setting; keep the final window closed
-indian-trader evaluate data.csv --lookback 20 --stop-pct 2 --dev 2018-01-01 2021-12-31 --val 2022-01-01 2023-12-31 --final 2024-01-01 2025-12-31
+indian-trader evaluate data.csv --costs bps --fee-bps 15 --lookback 20 --stop-pct 2 --dev 2018-01-01 2021-12-31 --val 2022-01-01 2023-12-31 --final 2024-01-01 2025-12-31
 ```
 
 `sweep` ranks by plateau score (mean expectancy in R of a setting and its one-step neighbours) and adds a reality check: a sign-flip test of the best t-statistic across all settings, in 5-day blocks. `evaluate` reports development and validation separately: metrics, 1x/2x/3x cost stress, equal-cash buy-and-hold over the same window, random entries with the same exits at the rule's own entry rate (30 seeds), and a bootstrap interval of mean R resampled by trading day. Its checks: at least 30 trades, expectancy above zero, bootstrap interval above zero, beats 90% of random runs, still positive at 2x costs, beats buy-and-hold. The verdict is `PASSES_PREDECLARED_CHECKS_NOT_PROOF` or `DOES_NOT_PASS`.

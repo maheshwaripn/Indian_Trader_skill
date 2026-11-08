@@ -135,3 +135,7 @@ See [release validation](docs/validation.md) for tested paths and unverified int
 Inspired by [Jake Schincariol's day-trader-skill](https://github.com/Jakeschincariol/day-trader-skill). This implementation is independently written; no upstream code has been copied. Original repository licence remains MIT.
 
 [NiftyHistory](https://niftyhistory.in/) is a third-party source for constituent events. Its site states “All rights reserved”; no redistribution licence was established during review. The supplied CSV is **not redistributed**. Import your own permitted download using the documented workflow. Dataset rights are separate from this code's MIT licence.
+
+### Shared market utilities and review corrections
+
+The dependency-free `indian_market_core` package supplies dated fees, the bounded NSE calendar and raw bhavcopy parsing for both repositories. Trader retains its public imports. See [cost assumptions and coverage](docs/costs.md) and [independent regression checks](docs/validation.md). Fee dates outside 2023-04-01 through 2026-11-08 now fail explicitly; use documented bps assumptions for other history. Incomplete paper marks yield unavailable total equity plus a known-value subtotal. Validation windows must be chronological and nonoverlapping, including a closed final window.

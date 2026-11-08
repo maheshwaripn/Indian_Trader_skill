@@ -3,6 +3,7 @@
 Money is stored as integer paise (schema version 2); ledgers written by v0.1 (floating rupees) are converted on first
 open. Each fill records the time it happened (`at`, user supplied, with UTC offset) and when it was recorded."""
 import sqlite3
+from datetime import date, timedelta, timezone
 from contextlib import closing, contextmanager
 from pathlib import Path
 from . import costs as charges
@@ -26,6 +27,8 @@ def db(path):
     with closing(sqlite3.connect(path, timeout=30)) as c:
         with c:
             version = c.execute("PRAGMA user_version").fetchone()[0]
+            if version > SCHEMA:
+                raise ValueError("Ledger schema is newer than this software; refusing to modify it")
             tables = {r[0] for r in c.execute("SELECT name FROM sqlite_master WHERE type='table'")}
             if version < SCHEMA and "account" in tables:
                 _migrate_v1(c)
@@ -50,6 +53,8 @@ def _migrate_v1(c):
 
 def initialize(path, cash):
     finite(cash, "capital", strict=True)
+    if paise(cash) <= 0:
+        raise ValueError("capital must round to at least one paise")
     with db(path) as c:
         if c.execute("SELECT 1 FROM account").fetchone():
             raise ValueError("paper account already exists; choose a different ledger to start again")
@@ -59,7 +64,8 @@ def initialize(path, cash):
 
 def auto_fee(product, at, side, qty, price, broker="flat20"):
     """Estimated statutory charges plus broker preset for this one order (see costs.py)."""
-    return charges.leg(product, at[:10], side, qty * price, broker)["total"]
+    day = parse_time(at).astimezone(timezone(timedelta(hours=5, minutes=30))).date().isoformat()
+    return charges.leg(product, day, side, qty * price, broker)["total"]
 
 
 def fill(path, fill_id, symbol, side, qty, price, fee=None, at=None, product=None, broker="flat20"):
@@ -75,6 +81,8 @@ def fill(path, fill_id, symbol, side, qty, price, fee=None, at=None, product=Non
         fee = auto_fee(product, at, side, qty, price, broker)
     finite(fee, "fee")
     price_p, fee_p = paise(price), paise(fee)
+    if price_p <= 0:
+        raise ValueError("price must round to at least one paise")
     with db(path) as c:
         c.execute("BEGIN IMMEDIATE")
         if c.execute("SELECT 1 FROM fills WHERE id=?", (fill_id,)).fetchone():
@@ -99,6 +107,8 @@ def fill(path, fill_id, symbol, side, qty, price, fee=None, at=None, product=Non
             realized = proceeds - relieved
             held, cost = held - qty, cost - relieved
             cash += proceeds
+            if cash < 0:
+                raise ValueError("insufficient paper cash to pay sell charges")
         c.execute("UPDATE account SET cash_paise=? WHERE id=1", (cash,))
         c.execute("INSERT OR REPLACE INTO positions VALUES (?,?,?)", (symbol, held, cost))
         c.execute("INSERT INTO fills VALUES (?,?,?,?,?,?,?,?,?)", (fill_id, at, stamp(), symbol, side, qty, price_p, fee_p, realized))
@@ -121,10 +131,17 @@ def status(path, prices=None):
         for p in pos:
             if p["symbol"] in prices:
                 px, asof = prices[p["symbol"]]
+                finite(px, "mark", strict=True)
+                if len(asof) == 10:
+                    date.fromisoformat(asof)
+                else:
+                    parse_time(asof)
                 p.update(mark=px, marked_at=asof, unrealized_pnl=round(p["qty"] * px - p["cost_basis"], 2)); unreal += p["unrealized_pnl"]
             else:
                 missing.append(p["symbol"])
-        out.update(unrealized_pnl=round(unreal, 2), equity=round(out["cash"] + sum(p.get("mark", 0) * p["qty"] for p in pos), 2), unmarked=missing,
+        subtotal = round(out["cash"] + sum(p.get("mark", 0) * p["qty"] for p in pos), 2)
+        out.update(unrealized_pnl=None if missing else round(unreal, 2), equity=None if missing else subtotal,
+                   known_value_subtotal=subtotal, valuation_complete=not missing, unmarked=missing,
                    mark_note="Marked at the latest close in the supplied file; exit charges are not deducted.")
     return out
 

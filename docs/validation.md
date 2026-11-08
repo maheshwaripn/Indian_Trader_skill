@@ -16,3 +16,9 @@ Not verified:
 - Yahoo network access and every optional dependency/platform combination.
 - Windows/macOS locally; the GitHub Actions matrix runs these remotely.
 - Historical alpha, adjusted prices, authoritative PIT reconciliation or regulatory approval.
+
+## Independent follow-up review
+
+The original 49 tests passed before changes. Added regressions cover overlapping development/validation/final windows, unsupported fee dates, zero/invalid order values, incomplete paper valuations, sub-paise fills, forward ledger schema refusal, exchange-local calendar dates and invalid resampling budgets. Missing marks now produce `equity: null` and a separate known-value subtotal, never a misleading partial equity total. Fee estimates reject dates outside explicit coverage. Paper marks may use a session date or an offset-aware timestamp.
+
+Shared modules now live in `indian_market_core`. Official Budget and Muhurat circulars were read; the daily calendar notes the separate CAS close. No broker, live-order or real-strategy verification was performed in this follow-up.

@@ -3,6 +3,7 @@ bootstrap intervals in R, parameter sweeps with neighbour (plateau) scores and a
 
 Typical use: choose settings on the development window only, then run the validation window once, and keep the
 final window untouched until you have decided. Nothing here proves an edge; it makes luck and costs visible."""
+from datetime import date
 import itertools
 import math
 import random
@@ -10,6 +11,19 @@ from statistics import median
 from . import costs as charges
 from .core import parse_time
 from .research import IST, daily_returns, run
+
+
+def validate_windows(*windows):
+    previous = None
+    for bounds in windows:
+        if bounds is None:
+            continue
+        if len(bounds) != 2 or not all(bounds):
+            raise ValueError("Each window requires explicit start and end dates")
+        start, end = map(date.fromisoformat, bounds)
+        if start > end or (previous is not None and start <= previous):
+            raise ValueError("Windows must be chronological, nonoverlapping and nonempty")
+        previous = end
 
 
 def window(start, end):
@@ -48,6 +62,8 @@ def bootstrap_r(trades, n=2000, seed=7):
     days = list(by.values())
     if len(days) < 5:
         return None
+    if n < 40:
+        raise ValueError("bootstrap requires at least 40 samples")
     rng = random.Random(seed); means = []
     for _ in range(n):
         pick = [r for _ in days for r in rng.choice(days)]
@@ -58,6 +74,8 @@ def bootstrap_r(trades, n=2000, seed=7):
 
 def null_runs(bars, params, start, end, seeds=30):
     """Random entries with the same exits, sizing, costs and window, entering at the rule's own rate."""
+    if not 1 <= seeds <= 10000:
+        raise ValueError("seeds must be between 1 and 10000")
     rule = run(bars, **params, start=start, end=end)
     eligible = rule["metrics"]["eligible_entry_bars"] or 1
     rate = min(1.0, max(rule["metrics"]["trades"], 1) / eligible)
@@ -73,6 +91,7 @@ def null_runs(bars, params, start, end, seeds=30):
 
 def evaluate(bars, params, dev, val, final=None, open_final=False, seeds=30, stresses=(1.0, 2.0, 3.0), gates=None):
     """Development and validation results, stress, baseline, null and bootstrap; gates are checked on validation."""
+    validate_windows(dev, val, final)
     gates = {"min_trades": 30, "min_expectancy_r": 0.0, "min_null_share": 0.9, "stress_2x_positive": True, **(gates or {})}
     windows = {"development": dev, "validation": val}
     if final and open_final:
@@ -88,7 +107,7 @@ def evaluate(bars, params, dev, val, final=None, open_final=False, seeds=30, str
                                 "rejections": r["rejections"], "skipped_sessions": sum(len(v) for v in r["skipped_sessions"].values())}
     v = out["results"]["validation"]; m = v["metrics"]; checks = {
         "enough_trades": m["trades"] >= gates["min_trades"],
-        "expectancy_r_positive": (m["expectancy_r"] or -1) > gates["min_expectancy_r"],
+        "expectancy_r_positive": (m["expectancy_r"] if m["expectancy_r"] is not None else -math.inf) > gates["min_expectancy_r"],
         "bootstrap_excludes_zero": bool(v["bootstrap_r"] and v["bootstrap_r"]["low"] > 0),
         "beats_random_entries": v["null"]["share_of_nulls_beaten"] >= gates["min_null_share"],
         "survives_2x_costs": (not gates["stress_2x_positive"]) or (v["stress"].get("2x", {}).get("net_return_pct", -1) > 0),
@@ -114,7 +133,10 @@ def neighbours(key, grid):
 def sweep(bars, base, grid, dev, min_trades=20, flips=1000, block=5, seed=11):
     """Every combination of `grid` on the development window. Ranked by plateau score: mean expectancy in R of the
     setting and its one-step neighbours, so an isolated lucky setting cannot win. Includes a reality check
-    (sign-flip max-t over daily returns of all settings): p is the chance that the best t-statistic arises from luck."""
+    (sign-flip max-t over daily returns of all settings): p is a resampling tail frequency under a block sign-symmetry null, not the probability of no edge."""
+    validate_windows(dev)
+    if not 1 <= block <= 252 or not 1 <= flips <= 100000:
+        raise ValueError("block must be 1..252 and flips 1..100000")
     names = list(grid)
     if not names:
         raise ValueError("grid is empty")
@@ -147,7 +169,7 @@ def sweep(bars, base, grid, dev, min_trades=20, flips=1000, block=5, seed=11):
                 signs += [rng.choice((-1, 1))] * block
             if max(tstats([[x * s for x in row] for row, s in zip(X, signs)])) >= actual:
                 hits += 1
-        rc = {"settings": len(combos), "best_t": actual, "p_value": hits / flips, "block_days": block}
+        rc = {"settings": len(combos), "best_t": actual, "p_value": (hits + 1) / (flips + 1), "block_days": block}
     return {"label": "PARAMETER_SWEEP_DEVELOPMENT_ONLY", "window": dev, "grid": grid, "settings_tried": len(combos),
             "selected": ranked[0] if ranked and ranked[0]["plateau_score"] is not None else None, "ranked": ranked, "reality_check": rc,
             "warnings": ["Every setting tried is listed; report them all.",

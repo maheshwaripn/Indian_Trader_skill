@@ -1,0 +1,51 @@
+{
+  "exchange": "NSE",
+  "segment": "equity and equity derivatives",
+  "coverage": {
+    "start": "2026-01-01",
+    "end": "2026-12-31"
+  },
+  "weekends_closed": true,
+  "holidays": [
+    "2026-01-15",
+    "2026-01-26",
+    "2026-03-03",
+    "2026-03-26",
+    "2026-03-31",
+    "2026-04-03",
+    "2026-04-14",
+    "2026-05-01",
+    "2026-05-28",
+    "2026-06-26",
+    "2026-09-14",
+    "2026-10-02",
+    "2026-10-20",
+    "2026-11-10",
+    "2026-11-24",
+    "2026-12-25"
+  ],
+  "special_sessions": [
+    {
+      "date": "2026-02-01",
+      "name": "Union Budget (Sunday), normal timings",
+      "open": "09:15",
+      "close": "15:30"
+    },
+    {
+      "date": "2026-11-08",
+      "name": "Muhurat: non-CAS continuous market; CAS securities end continuous trading 15:15",
+      "open": "14:20",
+      "close": "15:30",
+      "cas_continuous_close": "15:15"
+    }
+  ],
+  "sources": "NSE cash calendar: CMTR71775 (2025-12-12), amendment CMTR72260 (2026-01-12). Sunday Budget session verified against CMTR72349 (2026-01-16). Muhurat verified against CMTR76941 (2026-10-19).",
+  "checked": "2026-11-08",
+  "note": "Daily session classification only; not an intraday auction calendar. Cash-market timings do not establish derivatives timings. Dates outside coverage are UNKNOWN.",
+  "source_urls": [
+    "https://nsearchives.nseindia.com/content/circulars/CMTR71775.pdf",
+    "https://nsearchives.nseindia.com/content/circulars/CMTR72260.pdf",
+    "https://nsearchives.nseindia.com/content/circulars/CMTR72349.pdf",
+    "https://nsearchives.nseindia.com/content/circulars/CMTR76941.pdf"
+  ]
+}

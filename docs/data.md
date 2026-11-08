@@ -71,7 +71,7 @@ Other layouts are rejected rather than guessed. Bhavcopy prices are **raw**: spl
 
 `validate` and `ingest` list `suspect_corporate_actions`: overnight moves where previous close / next open is near a common split or bonus ratio (2, 3, 4, 5, 10, 1.5, 4/3, 2.5) and the move is at least 25%. `research` stops on these unless `--allow-suspect-jumps`. Treat the list as evidence to check, not proof: a crash can match and an odd ratio can be missed. Record the adjustment state when ingesting: `ingest FILE --name N --source S --adjustment raw|adjusted|unknown`.
 
-`calendar-check FILE` compares daily bars with the bundled NSE calendar (2026: holidays, the Budget Sunday session and the Muhurat session) and lists missing sessions and bars on closed days. Add more years with `--calendar FILE` in the same JSON shape as `src/indian_trader/data/nse_calendar_2026.json`. Dates outside every loaded calendar are not judged.
+`calendar-check FILE` compares daily bars with the bundled NSE calendar (2026: holidays, the Budget Sunday session and the Muhurat session) and lists missing sessions and bars on closed days. Add more years with `--calendar FILE` in the same JSON shape as `src/indian_market_core/data/nse_calendar_2026.json`. Dates outside every loaded calendar are not judged.
 
 ## Parquet
 
