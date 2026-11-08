@@ -1,3 +1,4 @@
+from contextlib import closing
 import sqlite3
 import tempfile
 import unittest
@@ -40,11 +41,11 @@ class ReviewRegressions(unittest.TestCase):
     def test_future_ledger_schema_not_modified(self):
         with tempfile.TemporaryDirectory() as folder:
             p = Path(folder) / 'paper.db'
-            with sqlite3.connect(p) as c:
+            with closing(sqlite3.connect(p)) as c:
                 c.execute('PRAGMA user_version=99')
             with self.assertRaises(ValueError):
                 paper.status(p)
-            with sqlite3.connect(p) as c:
+            with closing(sqlite3.connect(p)) as c:
                 self.assertEqual(c.execute('PRAGMA user_version').fetchone()[0], 99)
 
     def test_calendar_uses_exchange_date_and_bounded_coverage(self):
