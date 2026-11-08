@@ -22,3 +22,5 @@ Not verified:
 The original 49 tests passed before changes. Added regressions cover overlapping development/validation/final windows, unsupported fee dates, zero/invalid order values, incomplete paper valuations, sub-paise fills, forward ledger schema refusal, exchange-local calendar dates and invalid resampling budgets. Missing marks now produce `equity: null` and a separate known-value subtotal, never a misleading partial equity total. Fee estimates reject dates outside explicit coverage. Paper marks may use a session date or an offset-aware timestamp.
 
 Shared modules now live in `indian_market_core`. Official Budget and Muhurat circulars were read; the daily calendar notes the separate CAS close. No broker, live-order or real-strategy verification was performed in this follow-up.
+
+The follow-up suite also rejects intraday product taxation for overnight trend holdings. SQLite inspection handles in the new schema test are explicitly closed for Windows cleanup.

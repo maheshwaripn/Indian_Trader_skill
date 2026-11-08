@@ -59,3 +59,8 @@ class ReviewRegressions(unittest.TestCase):
             validation.null_runs([], {}, '2024-01-01', '2024-12-31', seeds=0)
         with self.assertRaises(ValueError):
             validation.sweep([], {}, {'fast': [5]}, ('2024-01-01', '2024-12-31'), block=0)
+
+    def test_overnight_strategy_cannot_use_intraday_taxes(self):
+        from indian_trader.research import run
+        with self.assertRaisesRegex(ValueError, "Overnight"):
+            run([], strategy="trend", product="intraday")

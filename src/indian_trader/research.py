@@ -55,6 +55,8 @@ def run(bars, strategy="trend", capital=100000, lookback=20, risk_pct=0.5, stop_
     product = product or ("delivery" if strategy == "trend" else "intraday")
     if product not in ("delivery", "intraday", "futures"):
         raise ValueError("product must be delivery, intraday or futures")
+    if strategy == "trend" and product == "intraday":
+        raise ValueError("Overnight trend holdings require delivery or futures product costs")
     if strategy == "orb" and product == "delivery":
         raise ValueError("ORB is intraday: use product intraday or futures")
     if not bars:
